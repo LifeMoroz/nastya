@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script>
+        function createCookie(name,value,days) {
+            if (days) {
+                var date = new Date();
+                date.setTime(date.getTime() + (days*24*60*60*1000));
+                var expires = "; expires=" + date.toUTCString();
+            }
+            else {
+                var expires = "";
+            }
+            document.cookie = name + "=" + value + expires + "; path=/";
+        }
+        function readCookie(name) {
+            var nameEQ = name + "=";
+            var ca = document.cookie.split(';');
+            for(var i=0;i < ca.length;i++) {
+                var c = ca[i];
+                while (c.charAt(0)==' ') c = c.substring(1,c.length);
+                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+            }
+            return null;
+        }
+        function removeFromCompare(hid) {
+            var compare = readCookie('compare');
+            if (compare) {
+                compare = compare.replace(new RegExp(hid + '', 'g'), '');
+                createCookie('compare', "", -1);
+                createCookie('compare', compare);
+            }
+            window.location.reload(false);
+        }
+    </script>
+</head>
+<body>
+<a href="{% url 'index' %}">На главную</a>
+<style type="text/css">
+  table td{
+    border: 1px solid black;
+    padding: 5px;
+  }
+  table th{
+    border: 1px solid black;
+    background-color: dimgray;
+  }
+</style>
+<table>
+<tr>
+    <th>Название</th>
+    <th>Рейтинг</th>
+    <th>Адрес</th>
+    <th>Телефон</th>
+</tr>
+{% for hotel in hotels %}
+<tr>
+    <td style="background-color: rgba(0,0,0,0.31)">{{ hotel.title }}</td>
+    <td>{{ hotel.rating }}</td>
+    <td>{{ hotel.address }}</td>
+    <td>{{ hotel.phone }}</td>
+    <td style="border: none;"><input type="button" value="Remove" onclick="removeFromCompare({{ hotel.id }})"></td>
+</tr>
+{% endfor %}
+</table>
+</body>
+</html>
