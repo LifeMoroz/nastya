@@ -52,7 +52,10 @@ class IndexDD(View):
 
     def get(self, request):
         user_cookie = request.COOKIES.get(AUTH_COOKIE)
-        users = self.user_mapper.select(Condition('id', user_cookie))
+        if not user_cookie:
+            users = self.user_mapper.select(Condition('id', user_cookie))
+        else:
+            users = []
         if not users:
             return HttpResponseRedirect(reverse('auth'))
         else:
