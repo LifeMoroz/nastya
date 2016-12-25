@@ -105,7 +105,5 @@ class CompareDD(View):
         if not ids:
             return render(request, 'compare.html')
         cond = Condition('id', ids)
-        print(cond.sql())
         hotels = self.hotel_mapper.select(cond)
-        print(hotels)
         return render(request, 'compare.html', {'hotels': hotels})
