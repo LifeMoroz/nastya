@@ -62,9 +62,9 @@ class IndexDD(View):
         hotels = self.get_hotels_list(categories)
         category_tree = Tree(categories).build_tree()
 
-        find_by = self.request.POST.get('search_string')
+        find_by = self.request.GET.get('search_string')
         if find_by:
-            found_hotels = self.hotel_mapper.select(Condition('title', find_by, action='LIKE'))
+            found_hotels = self.hotel_mapper.select(Condition('title', "%" + find_by + "%", action='LIKE'))
         else:
             found_hotels = self.hotel_mapper.select()
         return render(request, 'index.html', {"user": user, 'hotels': hotels,
