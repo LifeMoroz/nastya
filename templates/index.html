@@ -1,318 +1,52 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <style>
-            /* общий стиль */
-      body {font-family: Arial, Tahoma, sans-serif; margin: 2em; font-size: 62.5%;}
-      p {
-       font-size: 1.2em;
-      }
-      a {
-       color: #0066cc;
-       text-decoration: none;
-       outline: none;
-      }
-      /*a:link {
-       color: #0066cc;
-      }
-      a:visited {color: #00cc63; }*/
-      a:hover {
-       text-decoration: underline;
-      }
-      a:active, a:focus {
-       color: #666;
-       background-color: #f4f4f4;
-      }
-      a.current {
-       color: black;
-       font-weight: bold;
-       background-color: #f4f4f4;
-      }
-
-      /* Дерево многоуровневое
-      -------------------------------- */
-      #multi-derevo {
-       width: 220px; /* блок под дерево */
-       border: solid; /* границы блока */
-       border-color: silver gray gray silver;
-       border-width: 2px;
-       padding: 0 0 1em 0; /* нижний отступ */
-       font-size: 1.3em;
-      }
-       span { /* обертка пункта */
-         text-decoration: none;
-         display: block; /* растянем до правого края блока */
-         margin: 0 0 0 1.2em;
-         background-color: transparent;
-         border: solid silver; /* цвет линий */
-         border-width: 0 0 1px 1px; /* границы: низ и лево */
-       }
-        span a {/* тест элемента дерева */
-          display: block;
-          position: relative;
-          top: .95em; /* смещаем узел на середину линии */
-          background-color: #fff; /* закраска в цвет фона обязательна иначе будет видно линию */
-          margin: 0 0 .2em .7em; /* делаем промежуток между узлами, отодвигаем левее  */
-          padding: 0 0.3em; /* небольшой отступ от линии */
-         }
-        h4 {/* заголовок дерева */
-         font-size: 1em;
-         font-weight: bold;
-         margin: 0;
-         padding: 0 .25em;
-         border-bottom: 1px solid silver;
-        }
-       h4 a {
-         display: block;
-       }
-       ul, li {
-         list-style-image:none;
-         list-style-position:outside;
-         list-style-type:none;
-         margin:0;
-         padding:0;
-       }
-         ul li {
-          line-height: 1.2em;
-         }
-          ul li ul {
-            display: none; /* узлы свернуты */
-          }
-            ul li ul li {
-             margin: 0 0 0 1.2em;
-             border-left: 1px solid silver; /* цвет вертикальной линии между узлами */
-            }
-            li.last {/* последний узел, соединительную линию к след. узлу убираем */
-             border: none;
-            }
-       .marker { /* маркер раскрытия списка в закрытом состоянии */
-         border-color: transparent transparent transparent gray;
-         border-style: solid;
-         border-width: .25em 0 .25em .5em;
-         margin: .35em .25em 0 0;
-         float: left;
-         width: 0px;
-         height: 0px;
-         line-height: 0px;
-       }
-       .marker.open {/* маркер раскрытия списка в открытом состоянии */
-         border-color: gray transparent transparent transparent;
-         border-width: .5em .25em 0 .25em;
-       }
-      /* IE 6 Fixup */
-      * html #multi-derevo * { height: 1%;}
-      * html .marker { border-style: dotted dotted dotted solid; }
-      * html .marker.open { border-style: solid dotted dotted dotted; }
-    </style>
-    <!-- Tree script -->
-    <script type="text/javascript">
-        /*<![CDATA[*/
-        (function() {
-            var tree_init = function() {
-                this.clearWhitespace = function(element) {
-                    var i, array = [];
-                    for (i=0; i<element.childNodes.length; i++) {
-                        if (element.childNodes[i].nodeType == 3) {
-                            element.childNodes[i].nodeValue.match(/^[\s\r\n]+$/m) &&
-                                array.push(element.childNodes[i]);
-                        } else {
-                            this.clearWhitespace(element.childNodes[i]);
-                        }
-                    }
-                    for (i=0; i<array.length; i++) {
-                        array[i].parentNode.removeChild(array[i]);
-                    }
-                }
-                this.addMarker = function() {
-                    var ul_item = this.tree.getElementsByTagName("ul");
-                    for (var i=0; i<ul_item.length; i++) {
-                        var li_item = ul_item[i].getElementsByTagName("li");
-                        for (var j=0; j<li_item.length; j++) {
-                            var child = li_item[j].getElementsByTagName("ul");
-                            if (child.length > 0 && li_item[j].parentNode == ul_item[i]) {
-                                var a_item = li_item[j].getElementsByTagName("a");
-                                if (a_item.length > 0 && a_item[0].parentNode.parentNode == li_item[j]) {
-                                    a_item[0].innerHTML = '<em class="marker"></em>' + a_item[0].innerHTML;
-                                }
-                            }
-                        }
-                    }
-                }
-                this.addEvent = function() {
-                    var span_item = this.tree.getElementsByTagName("span");
-                    var thisCopy  = this;
-                    for (var i=0; i<span_item.length; i++) {
-                        span_item[i].onclick = function() { thisCopy.click(this) };
-                    }
-                }
-                this.setCurrent = function(a) {
-                    if (this.current)
-                        this.current.className =
-                        this.current.className.replace("current", "");
-
-                    this.current = a;
-                    a.className += " current";
-                }
-                this.toggleClass = function(elem, classname) {
-                    if (elem.className.indexOf(classname) != -1) {
-                        elem.className = elem.className.replace(classname);
-                        elem.className = elem.className.replace("  ", " ");
-                    } else {
-                        elem.className += " " + classname;
-                    }
-                }
-                this.click = function(span) {
-                    var subtree;
-                    var a  = span.firstChild;
-                    var li = span.parentNode;
-                    var ul = span.nextSibling;
-                    var em = a.firstChild;
-                    this.setCurrent(a);
-
-                    if (li.nextSibling == null) {
-                        li.hasChildNodes() && (subtree = li.childNodes[1]);
-                        for (var i=0; i<subtree.childNodes.length; i++)
-                            subtree.childNodes[i].className = "last";
-                    }
-                    if (ul && ul.nodeName.toLowerCase() == "ul")
-                        ul.style.display = ul.offsetWidth > 0 ? "none" : "block";
-                    if (em && em.nodeName.toLowerCase() == "em")
-                        this.toggleClass(em, "open");
-                }
-
-                this.tree = document.getElementById('multi-derevo');
-                this.clearWhitespace(this.tree);
-                this.addMarker();
-                this.addEvent();
-            }
-            if (window.attachEvent) {
-                window.attachEvent("onload", tree_init);
-            } else {
-                window.addEventListener("load", tree_init, false);
-            }
-        })()
-        /*]]>*/
-    </script>
-
-    <!-- Hotels -->
-    <script>
-        var hotels = {};
-        {% for category_id, hotels in hotels.items %}
-            hotels[{{ category_id }}] = [];
-            {% for hotel in hotels %}
-                hotels[{{ category_id }}].push({
-                    'id': '{{ hotel.id }}',
-                    'title': '{{ hotel.title }}',
-                    'address': '{{ hotel.address }}',
-                    'phone': '{{ hotel.phone }}',
-                    'rating': '{{ hotel.rating }}'
-                });
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+            <div id="treeview-checkable" class="treeview">
+            </div>
+            <button type="button" class="btn btn-success" style="margin: 0 auto; display: block" onclick="filter()">Отфильтровать</button>
+        </div >
+        <div class="col-sm-9 col-md-10 col-sm-offset-3 col-md-offset-2 main">
+            <div class="row">
+            {% for hotel in found_hotels %}
+                <div class="col-xs-12 col-sm-6 col-md-6 main">
+                    <div class="row">
+                        <div class="col-xs-9 col-sm-9 col-md-10">
+                            <div class="media-left">
+                                {% if not hotel.image %}
+                                <img class="media-object" data-src="holder.js/128x128">
+                                {% else %}
+                                <img class="media-object img-circle" src="{{ hotel.image }}" style="width: 128px; height: 128px;">
+                                {% endif %}
+                            </div>
+                            <div class="media-body">
+                                    <h2 class="media-heading hotel_header">{{ hotel.title }}</h2>
+                                    <p class="hotel_text">Адресс: {{ hotel.address }}</p>
+                                    <p class="hotel_text">Телефон: {{ hotel.phone }}</p>
+                                <p class="hotel_text">Рейтинг: <span class="label {% if hotel.rating < 3 %}label-danger{% elif hotel.rating < 5 %}label-warning{% elif hotel.rating < 8 %}label-default{% else %}label-success{% endif %}">{{ hotel.rating }}</span></p>
+                                    <div class="tags">
+                                        <span class="label {% with "1234"|random as tag_label %}
+                                            {% if tag_label == '1' %}'label-danger'{% endif %}
+                                            {% if tag_label == '2' %}'label-default'{% endif %}
+                                            {% if tag_label == '3' %}'label-success'{% endif %}
+                                            {% if tag_label == '4' %}'label-warning'{% endif %}
+                                        {% endwith %}">Тег</span>
+                                    </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-3 col-sm-3 col-md-2">
+                            <button type="button" id="add{{ hotel.id }}" class="btn btn-info" onclick="addToCompare({{ hotel.id }})" style="margin-top: 70%">Сравнить</button>
+                            <button type="button" id="remove{{ hotel.id }}" class="btn btn-info hide" onclick="removeFromCompare({{ hotel.id }})" style="margin-top: 70%">Убрать из<br>сравнения</button>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+            <h1>К сожалению ваш запрос не вернул ничего :(</h1>
+                <h2><a href="/">На главную</a></h2>
             {% endfor %}
-        {% endfor %}
-
-        function print_hotel(category_id){
-            if (category_id){
-                tmp = hotels[category_id];
-            }
-            else {
-                tmp = hotels[0];
-            }
-            console.log(tmp);
-
-            var container = document.getElementById('hotels_container');
-            while (container.firstChild) {
-                container.removeChild(container.firstChild);
-            }
-            for (var i=0; i<tmp.length; i++) {
-                var dv = document.createElement("div");
-                dv.className = 'hotel';
-                dv.innerHTML = "<h2>" + tmp[i].title + "</h2><br>Address: " + tmp[i].address + '<br>Phone: ' + tmp[i].phone +
-                               "<br>Rating: " + tmp[i].rating + "<br><input type=\"button\" value=\"To compare\" onclick=\"addToCompare(" + tmp[i].id + ")\">";
-                container.appendChild(dv);
-            }
-        }
-        function createCookie(name,value,days) {
-            if (days) {
-                var date = new Date();
-                date.setTime(date.getTime() + (days*24*60*60*1000));
-                var expires = "; expires=" + date.toUTCString();
-            }
-            else {
-                var expires = "";
-            }
-            document.cookie = name + "=" + value + expires + "; path=/";
-        }
-        function readCookie(name) {
-            var nameEQ = name + "=";
-            var ca = document.cookie.split(';');
-            for(var i=0;i < ca.length;i++) {
-                var c = ca[i];
-                while (c.charAt(0)==' ') c = c.substring(1,c.length);
-                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-            }
-            return null;
-        }
-        function addToCompare(hid) {
-            var compare = readCookie('compare');
-            if (compare) {
-                compare += ' ' + hid;
-                createCookie('compare', "", -1);
-            }
-            else {
-                compare = hid;
-            }
-            createCookie('compare', compare);
-        }
-    </script>
-</head>
-<body>
-<div style="display: inline-block; width: 300px; vertical-align: top;">
-    <div id="multi-derevo">
-      <h4><a href="/">Все отели</a></h4>
-      <ul><!-- 1 уровень -->
-       {% for c in ct_tree %}
-       <li><span><a href="#" onclick="print_hotel({{ c.category.id }})">{{ c.category.title }}</a></span>
-         <ul><!-- 2 уровень -->
-          {% for c in c.items %}
-          <li><span><a href="#" onclick="print_hotel({{ c.category.id }})">{{ c.category.title }}</a></span>
-            <ul><!-- 3 уровень -->
-             {% for c in c.items %}
-             <li><span><a href="#" onclick="print_hotel({{ c.category.id }})">{{ c.category.title }}</a></span></li>
-             {% endfor %}
-            </ul>
-          </li>
-          {% endfor %}
-         </ul>
-       </li>
-       {% endfor %}
-      </ul>
-    </div><!-- /multi-derevo -->
-    <br>
-    <a href="{% url 'compare' %}" style="font-size: 16px">Перейти к сравнению</a>
-    <form>
-    <input type="text" name='search_string' placeholder="Введите текст" />
-    <input type="submit" value="Искать">
-    </form>
-</div>
-<style>
-    .hotel {
-        width: 599px;
-        border: 1px solid rgba(0, 0, 0, 0.24);
-        padding: 5px;
-    }
-</style>
-<div id="hotels_container" style="display: inline-block; width: 600px; font-size: 18px;">
-    {% for hotel in found_hotels %}
-    <div class="hotel">
-        <h2>{{ hotel.title }}</h2><br>
-        Address: {{ hotel.address }}<br>
-        Phone: {{ hotel.phone }}<br>
-        Rating: {{ hotel.rating }}<br>
-        <input type="button" value="To compare" onclick="addToCompare({{ hotel.id }})">
+            </div>
+        </div>
     </div>
-    {% endfor %}
 </div>
-</body>
-</html>
+{% endblock %}

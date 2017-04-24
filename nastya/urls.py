@@ -22,5 +22,4 @@ urlpatterns = [
     url(r'^$', views.IndexDD.as_view(), name='index'),
     url(r'^auth/$', views.AuthDD.as_view(), name='auth'),
     url(r'^compare/$', views.CompareDD.as_view(), name='compare'),
-    url(r'^compare/$', views.CompareDD.as_view(), name='compare'),
 ]

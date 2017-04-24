@@ -1,5 +1,6 @@
 # Domain models
 
+
 class User:
     def __init__(self, id=None, login=None, password=None, first_name=None, last_name=None, phone=None):
         self.id = id
@@ -15,13 +16,14 @@ class User:
 
 
 class Hotel:
-    def __init__(self, id=None, title=None, category=None, address=None, rating=None, phone=None):
+    def __init__(self, id=None, title=None, category=None, address=None, rating=None, phone=None, image=None):
         self.id = id
         self.title = title
         self.category = category
         self.address = address
         self.rating = rating
         self.phone = phone
+        self.image = image
 
     # Логика сравнения отелей?
     def __lt__(self, other):

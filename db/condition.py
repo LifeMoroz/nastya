@@ -35,7 +35,14 @@ class Query(Logic):
             operator = ' AND ' if type == '&' else ' OR '
             left_sql, left_params = left.sql(fields_map=fields_map)
             right_sql, right_params = right.sql(fields_map=fields_map)
-            sql = '(' + left_sql + operator + right_sql + ')'
+            if not (left_sql or right_sql):
+                return "", []
+            elif not left_sql:
+                return right_sql, right_params
+            elif not right_sql:
+                return left_sql, left_params
+            else:
+                sql = '(' + left_sql + operator + right_sql + ')'
         return sql, left_params + right_params
 
     def __str__(self):
@@ -50,7 +57,7 @@ class Condition(Logic):
             return 'IN (?)'
         return '=?'
 
-    def __init__(self, field, value, action=None):
+    def __init__(self, field=None, value=None, action=None):
         self.field = field
         self.action = action
         self.action = self._get_action_by_value(value)
@@ -62,6 +69,8 @@ class Condition(Logic):
             self.value = value
 
     def sql(self, fields_map=None):
+        if self.field is None:
+            return "", []
         field = self.field
         if fields_map:
             field = fields_map.get(self.field, self.field)

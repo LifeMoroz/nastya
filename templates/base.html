@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Dashboard Template for Bootstrap</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="/static/bootstrap/css/dashboard.css" rel="stylesheet">
+<style type="text/css" id="treeview-checkable-style"> .treeview .list-group-item{cursor:pointer}.treeview span.indent{margin-left:10px;margin-right:10px}.treeview span.icon{width:12px;margin-right:5px}.treeview .node-disabled{color:silver;cursor:not-allowed}.node-treeview-checkable{}.node-treeview-checkable:not(.node-disabled):hover{background-color:#F5F5F5;} </style>
+</head>
+
+<body>
+
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">My Love!</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="{% url 'compare' %}">Сравнение</a></li>
+                <li><a href="#">Выйти</a></li>
+            </ul>
+            <form class="navbar-form navbar-right" method="get">
+                <input type="text" class="form-control" name="search_string" placeholder="Поиск...">
+            </form>
+        </div>
+    </div>
+</nav>
+
+{% block content %}{% endblock %}
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="/static/bootstrap/js/bootstrap.min.js"></script>
+<script src="/static/bootstrap/js/tree.js"></script>
+<script type="text/javascript">
+    /** Функции сравнения **/
+        function createCookie(name,value,days) {
+            if (days) {
+                var date = new Date();
+                date.setTime(date.getTime() + (days*24*60*60*1000));
+                var expires = "; expires=" + date.toUTCString();
+            }
+            else {
+                var expires = "";
+            }
+            document.cookie = name + "=" + value + expires + "; path=/";
+        }
+        function readCookie(name) {
+            var nameEQ = name + "=";
+            var ca = document.cookie.split(';');
+            for(var i=0;i < ca.length;i++) {
+                var c = ca[i];
+                while (c.charAt(0)==' ') c = c.substring(1,c.length);
+                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+            }
+            return null;
+        }
+        function addToCompare(hid) {
+            var compare = readCookie('compare');
+
+            if (compare) {
+                var values = compare.split(/(\s+)/).filter( function(e) {
+                    var value = e.trim();
+                    return value.length > 0 && hid != value;
+                });
+                console.log($.inArray(hid, values));
+                if ($.inArray(hid, values) != -1){
+                    return;
+                }
+                values.push(hid);
+                compare = values.join(" ");
+                console.log(values, values.join(" "));
+                createCookie('compare', "", -1);
+            }
+            else {
+                compare = hid;
+            }
+            $("#add" + hid).addClass("hide");
+            $("#remove" + hid).removeClass("hide");
+            createCookie('compare', compare);
+        }
+        function removeFromCompare(hid) {
+            var compare = readCookie('compare');
+
+            if (compare) {
+                var values = compare.split(/(\s+)/).filter( function(e) {
+                    var value = e.trim();
+                    return value.length > 0 && hid != value;
+                } );
+                compare = values.join(" ");
+                createCookie('compare', compare);
+                $("#remove" + hid).addClass("hide");
+                $("#add" + hid).removeClass("hide");
+            }
+            else {
+                compare = hid;
+            }
+        }
+    /** END Функции сравнения **/
+    /** Настройки меню фильтров **/
+
+
+  		$(function() {
+
+        var defaultData = [
+            {% for c in ct_tree %}
+                {
+                    cid: {{ c.category.id }},
+                    text: "{{ c.category.title }}",
+                    state: {checked: {% if c.category.id in checked %}true{% else %}false{% endif %}},
+                    {% if c.items %}
+                    nodes: [
+                        {% for c in c.items %}
+                            {
+                                cid: {{ c.category.id }},
+                                text: "{{ c.category.title }}",
+                                state: {checked: {% if c.category.id in checked %}true{% else %}false{% endif %}},
+                                {% if c.items %}
+                                nodes: [
+                                    {% for c in c.items %}
+                                        {
+                                            cid: {{ c.category.id }},
+                                            text: "{{ c.category.title }}",
+                                            state: {checked: {% if c.category.id in checked %}true{% else %}false{% endif %}}
+                                        },
+                                    {% endfor %}
+                                ]
+                                {% endif %}
+                            },
+                        {% endfor %}
+                    ]
+                    {% endif %}
+                },
+            {% endfor %}
+        ];
+
+        function check_childs(node) {
+            $.each(node.nodes, function (index, n) {
+                $checkableTree.data("treeview").checkNode(n.nodeId, {'silent': true});
+            });
+        }
+/*
+        function uncheck_parent(node) {
+            $checkableTree.data("treeview").uncheckNode(node.nodeId, {'silent': true});
+            var parent = $checkableTree.data("treeview").getParent(node.nodeId);
+            if(parent) { uncheck_parent(parent); }
+
+        }
+*/
+        var $checkableTree = $('#treeview-checkable').treeview({
+          data: defaultData,
+          showIcon: false,
+          showCheckbox: true,
+          onNodeChecked: function(event, node) {
+              check_childs(node);
+          }
+        });
+
+        var findCheckableNodess = function() {
+          return $checkableTree.treeview('search', [ $('#input-check-node').val(), { ignoreCase: false, exactMatch: false } ]);
+        };
+        var checkableNodes = findCheckableNodess();
+
+        // Check/uncheck/toggle nodes
+        $('#input-check-node').on('keyup', function (e) {
+          checkableNodes = findCheckableNodess();
+          $('.check-node').prop('disabled', !(checkableNodes.length >= 1));
+        });
+
+        $('#btn-check-node.check-node').on('click', function (e) {
+          $checkableTree.treeview('checkNode', [ checkableNodes, { silent: $('#chk-check-silent').is(':checked') }]);
+        });
+
+        $('#btn-uncheck-node.check-node').on('click', function (e) {
+          $checkableTree.treeview('uncheckNode', [ checkableNodes, { silent: $('#chk-check-silent').is(':checked') }]);
+        });
+
+        $('#btn-toggle-checked.check-node').on('click', function (e) {
+          $checkableTree.treeview('toggleNodeChecked', [ checkableNodes, { silent: $('#chk-check-silent').is(':checked') }]);
+        });
+
+        // Check/uncheck all
+        $('#btn-check-all').on('click', function (e) {
+          $checkableTree.treeview('checkAll', { silent: $('#chk-check-silent').is(':checked') });
+        });
+
+        $('#btn-uncheck-all').on('click', function (e) {
+          $checkableTree.treeview('uncheckAll', { silent: $('#chk-check-silent').is(':checked') });
+        });
+
+  		});
+
+  		function filter() {
+  		    arr = [];
+  		    $.each($('#treeview-checkable').data('treeview').getChecked(), function (index, obj) {
+                arr.push(obj.cid);
+            });
+  		    window.location.href = "?" + $.param({"cids": arr});
+        }
+    /** END Настройки меню фильтров **/
+    $(function () {
+        var cookie = readCookie('compare');
+        if (!cookie) return;
+        var values = cookie.split(/(\s+)/).filter( function(e) { return e.trim().length > 0; } );
+        values = values.filter(function(item, i, ar){ return ar.indexOf(item) === i; });
+        {% for hotel in found_hotels %}
+            if ($.inArray("{{ hotel.id }}", values) != -1) {
+                $("#add{{ hotel.id }}").addClass("hide");
+                $("#remove{{ hotel.id }}").removeClass("hide");
+            }
+        {% endfor %}
+    })
+  	</script>
+</body>
+</html>

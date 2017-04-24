@@ -40,7 +40,8 @@ class BaseMapper:
         where_params, where_sql = [], None
         if condition is not None:
             where_sql, where_params = condition.sql(self.db_obj_map())
-            sql += " WHERE {where}".format(where=where_sql)
+            if where_sql:
+                sql += " WHERE {where}".format(where=where_sql)
         result = []
         for row in Database.execute(sql, where_params).fetchall():
             result.append(self.model(*row))

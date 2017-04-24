@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
 from db.mapper import BaseMapper
-from nastya.models import User, Hotel, HotelCategory
+from nastya.app_models import User, Hotel, HotelCategory
 
 
 class UserMapper(BaseMapper):
@@ -31,6 +31,7 @@ class HotelMapper(BaseMapper):
         new_map['address'] = 'address'
         new_map['rating'] = 'rating'
         new_map['phone'] = 'phone'
+        new_map['image'] = 'image'
         return new_map
 
 

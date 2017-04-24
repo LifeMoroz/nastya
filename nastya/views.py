@@ -5,10 +5,10 @@ from django.urls import reverse
 from django.views import View
 
 from db.condition import Condition
+from nastya.const import AUTH_COOKIE
+from nastya.decorators import auth_required
 from nastya.mappers import UserMapper, HotelMapper, HotelCategoryMapper
-from nastya.models import User, HotelCategory
-
-AUTH_COOKIE = 'user'
+from nastya.app_models import User
 
 
 class Tree:
@@ -46,32 +46,34 @@ class IndexDD(View):
 
         hotel_map = dict((x.id, []) for x in category_list)
         for hotel in hotels:
-            if hotel.category is not None:
+            if hotel.category:
                 hotel_map[int(hotel.category)].append(hotel)
         return hotel_map
 
+    @auth_required
     def get(self, request):
-        user_cookie = request.COOKIES.get(AUTH_COOKIE)
-        if not user_cookie:
-            users = self.user_mapper.select(Condition('id', user_cookie))
-        else:
-            users = []
-        if not users:
-            return HttpResponseRedirect(reverse('auth'))
-        else:
-            user = users[0]
-
         categories = self.category_mapper.select()
         hotels = self.get_hotels_list(categories)
         category_tree = Tree(categories).build_tree()
 
-        find_by = self.request.GET.get('search_string')
-        if find_by:
-            found_hotels = self.hotel_mapper.select(Condition('title', "%" + find_by + "%", action='LIKE'))
-        else:
-            found_hotels = self.hotel_mapper.select()
-        return render(request, 'index.html', {"user": user, 'hotels': hotels,
-                                              'ct_tree': category_tree, 'found_hotels': found_hotels})
+        c = Condition()
+        cids = [c.id for c in categories]
+        if 'cids[]' in self.request.GET:
+            cids = self.request.GET.getlist('cids[]')
+            c &= Condition("category", cids)
+        if 'search_string' in self.request.GET:
+            c &= Condition('title', "%" + self.request.GET['search_string'] + "%", action='LIKE')
+        found_hotels = self.hotel_mapper.select(c)
+        return render(
+            request,
+            'index.html',
+            {
+                'user': self.user,
+                'hotels': hotels,
+                'ct_tree': category_tree,
+                'found_hotels': found_hotels,
+                'checked': [int(cid) for cid in cids]
+            })
 
 
 class AuthDD(View):
@@ -109,4 +111,4 @@ class CompareDD(View):
             return render(request, 'compare.html')
         cond = Condition('id', ids)
         hotels = self.hotel_mapper.select(cond)
-        return render(request, 'compare.html', {'hotels': hotels})
+        return render(request, 'compare.html', {'hotels': hotels, 'width': 420 * len(hotels)})
