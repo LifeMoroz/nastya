@@ -50,7 +50,6 @@ class IndexDD(View):
                 hotel_map[int(hotel.category)].append(hotel)
         return hotel_map
 
-    @auth_required
     def get(self, request):
         categories = self.category_mapper.select()
         hotels = self.get_hotels_list(categories)
@@ -68,7 +67,6 @@ class IndexDD(View):
             request,
             'index.html',
             {
-                'user': self.user,
                 'hotels': hotels,
                 'ct_tree': category_tree,
                 'found_hotels': found_hotels,
@@ -105,6 +103,7 @@ class AuthDD(View):
 class CompareDD(View):
     hotel_mapper = HotelMapper()
 
+    @auth_required
     def get(self, request):
         ids = request.COOKIES.get('compare', '').split(' ')
         if not ids:
