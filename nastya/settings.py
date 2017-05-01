@@ -123,3 +123,5 @@ STATICFILES_DIRS = [
 ]
 
 STATIC_URL = '/static/'
+
+USER_LOG_FILE = os.path.join(BASE_DIR, 'log_example.txt')

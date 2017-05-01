@@ -7,6 +7,7 @@ from django.views import View
 from db.condition import Condition
 from nastya.const import AUTH_COOKIE
 from nastya.decorators import auth_required
+from nastya.logger import Logger
 from nastya.mappers import UserMapper, HotelMapper, HotelCategoryMapper, TagMapper, TagLinkMapper
 from nastya.app_models import User
 
@@ -106,10 +107,12 @@ class AuthDD(View):
     def post(self, request):
         form = self.AuthForm(data=request.POST)
         if not form.is_valid():
+            Logger().warn("Invalid form")
             return HttpResponseRedirect(reverse('auth') + "?no_auth=1")
 
         users = self.mapper.select(Condition('login', form.cleaned_data['login']) & Condition('password', form.cleaned_data['password']))
         if not users:
+            Logger().error("Wrong password/login")
             return HttpResponseRedirect(reverse('auth') + "?no_auth=1")
         elif len(users) > 1:
             raise RuntimeError("login should be unique")
