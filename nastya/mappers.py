@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
 from db.mapper import BaseMapper
-from nastya.app_models import User, Hotel, HotelCategory
+from nastya.app_models import User, Hotel, HotelCategory, Tag, TagLink
 
 
 class UserMapper(BaseMapper):
@@ -44,4 +44,27 @@ class HotelCategoryMapper(BaseMapper):
         new_map['id'] = 'id'
         new_map['title'] = 'title'
         new_map['parent'] = 'parent'
+        return new_map
+
+
+class TagMapper(BaseMapper):
+    model = Tag
+    table_name = 'tag'
+
+    def db_obj_map(self) -> OrderedDict:
+        new_map = OrderedDict()
+        new_map['id'] = 'id'
+        new_map['title'] = 'title'
+        return new_map
+
+
+class TagLinkMapper(BaseMapper):
+    model = TagLink
+    table_name = 'tag_hotel_link'
+
+    def db_obj_map(self) -> OrderedDict:
+        new_map = OrderedDict()
+        new_map['id'] = 'id'
+        new_map['h_id'] = 'h_id'
+        new_map['t_id'] = 't_id'
         return new_map

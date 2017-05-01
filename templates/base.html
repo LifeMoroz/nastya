@@ -15,7 +15,8 @@
 
     <!-- Custom styles for this template -->
     <link href="/static/bootstrap/css/dashboard.css" rel="stylesheet">
-<style type="text/css" id="treeview-checkable-style"> .treeview .list-group-item{cursor:pointer}.treeview span.indent{margin-left:10px;margin-right:10px}.treeview span.icon{width:12px;margin-right:5px}.treeview .node-disabled{color:silver;cursor:not-allowed}.node-treeview-checkable{}.node-treeview-checkable:not(.node-disabled):hover{background-color:#F5F5F5;} </style>
+    <style type="text/css" id="treeview-checkable-style"> .treeview .list-group-item{cursor:pointer}.treeview span.indent{margin-left:10px;margin-right:10px}.treeview span.icon{width:12px;margin-right:5px}.treeview .node-disabled{color:silver;cursor:not-allowed}.node-treeview-checkable{}.node-treeview-checkable:not(.node-disabled):hover{background-color:#F5F5F5;} </style>
+    <link href="/static/bootstrap/tags/bootstrap-tagsinput.css" rel="stylesheet">
 </head>
 
 <body>
@@ -51,6 +52,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script src="/static/bootstrap/js/bootstrap.min.js"></script>
 <script src="/static/bootstrap/js/tree.js"></script>
+<script src="/static/bootstrap/tags/bootstrap-tagsinput.js"></script>
 <script type="text/javascript">
     /** Функции сравнения **/
         function createCookie(name,value,days) {
@@ -214,7 +216,7 @@
   		    $.each($('#treeview-checkable').data('treeview').getChecked(), function (index, obj) {
                 arr.push(obj.cid);
             });
-  		    window.location.href = "?" + $.param({"cids": arr});
+  		    window.location.href = "?" + $.param({"cids": arr, "tags": $('#tags').val().split(",")});
         }
     /** END Настройки меню фильтров **/
     $(function () {

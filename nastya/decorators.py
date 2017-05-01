@@ -3,13 +3,14 @@ from django.urls import reverse
 
 from db.condition import Condition
 from nastya.const import AUTH_COOKIE
+from nastya.mappers import UserMapper
 
 
 def auth_required(view, *args, **kwargs):
     def wrapper(self, request, *args, **kwargs):
         user_cookie = request.COOKIES.get(AUTH_COOKIE)
         if user_cookie:
-            users = self.user_mapper.select(Condition('id', user_cookie))
+            users = UserMapper().select(Condition('id', user_cookie))
         if not user_cookie or not users:
             return HttpResponseRedirect(reverse('auth'))
         else:

@@ -62,7 +62,10 @@ class Condition(Logic):
         self.action = action
         self.action = self._get_action_by_value(value)
         if hasattr(value, '__iter__') and not isinstance(value, str):
-            value = ', '.join(value)
+            if isinstance(value[0], str):
+                value = '"' + '", "'.join(value) + '"'
+            else:
+                value = ', '.join([str(v) for v in value])
             self.action = self.action.replace('?', value)
             self.value = None
         else:

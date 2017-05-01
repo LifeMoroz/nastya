@@ -38,3 +38,16 @@ class HotelCategory:
         self.id = id
         self.title = title
         self.parent = parent
+
+
+class TagLink:
+    def __init__(self, id=None, h_id=None, t_id=None):
+        self.id = id
+        self.h_id = h_id
+        self.t_id = t_id
+
+
+class Tag:
+    def __init__(self, id=None, title=None):
+        self.id = id
+        self.title = title

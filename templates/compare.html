@@ -32,6 +32,37 @@
                             <th>{{ hotel.rating }}</th>
                         {% endfor %}
                     </tr>
+                    <tr>
+                        <td>Телефон</td>
+                        {% for hotel in hotels %}
+                            <th>{{ hotel.phone }}</th>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Адрес</td>
+                        {% for hotel in hotels %}
+                            <th>{{ hotel.address }}</th>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Категория</td>
+                        {% for hotel in hotels %}
+                            <th>{% if hotel.category %}{{ hotel.category.title }}{% else %}Без категории{% endif %}</th>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Теги</td>
+                        {% for hotel in hotels %}
+                            <th>{% for tag in hotel.tags %}
+                                    <span class="label {% with "1234"|random as tag_label %}
+                                        {% if tag_label == '1' %}label-danger{% endif %}
+                                        {% if tag_label == '2' %}label-default{% endif %}
+                                        {% if tag_label == '3' %}label-success{% endif %}
+                                        {% if tag_label == '4' %}label-warning{% endif %}
+                                    {% endwith %}">{{ tag.title }}</span>
+                                    {% endfor %}</th>
+                        {% endfor %}
+                    </tr>
                     </tbody>
                 </table>
             </div>

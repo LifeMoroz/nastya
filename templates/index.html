@@ -5,6 +5,10 @@
         <div class="col-sm-3 col-md-2 sidebar">
             <div id="treeview-checkable" class="treeview">
             </div>
+            <div style="margin-bottom: 10px;">
+                <label for="tags">Теги</label>
+                <input id ="tags" type="text" value="{% for tag in selected_tags %}{{ tag.title }},{% endfor %}" data-role="tagsinput" />
+            </div>
             <button type="button" class="btn btn-success" style="margin: 0 auto; display: block" onclick="filter()">Отфильтровать</button>
         </div >
         <div class="col-sm-9 col-md-10 col-sm-offset-3 col-md-offset-2 main">
@@ -25,14 +29,16 @@
                                     <p class="hotel_text">Адресс: {{ hotel.address }}</p>
                                     <p class="hotel_text">Телефон: {{ hotel.phone }}</p>
                                 <p class="hotel_text">Рейтинг: <span class="label {% if hotel.rating < 3 %}label-danger{% elif hotel.rating < 5 %}label-warning{% elif hotel.rating < 8 %}label-default{% else %}label-success{% endif %}">{{ hotel.rating }}</span></p>
-                                    <div class="tags">
-                                        <span class="label {% with "1234"|random as tag_label %}
-                                            {% if tag_label == '1' %}'label-danger'{% endif %}
-                                            {% if tag_label == '2' %}'label-default'{% endif %}
-                                            {% if tag_label == '3' %}'label-success'{% endif %}
-                                            {% if tag_label == '4' %}'label-warning'{% endif %}
-                                        {% endwith %}">Тег</span>
-                                    </div>
+                                <div class="tags">
+                                    {% for tag in hotel.tags %}
+                                    <span class="label {% with "1234"|random as tag_label %}
+                                        {% if tag_label == '1' %}label-danger{% endif %}
+                                        {% if tag_label == '2' %}label-default{% endif %}
+                                        {% if tag_label == '3' %}label-success{% endif %}
+                                        {% if tag_label == '4' %}label-warning{% endif %}
+                                    {% endwith %}">{{ tag.title }}</span>
+                                    {% endfor %}
+                                </div>
                             </div>
                         </div>
                         <div class="col-xs-3 col-sm-3 col-md-2">

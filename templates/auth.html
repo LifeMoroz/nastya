@@ -22,6 +22,14 @@
 
     <div class="container">
       <form class="form-signin" method="post">
+          {% if no_auth %}
+          <div class="alert alert-warning alert-dismissible fade in" role="alert">
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                  <span aria-hidden="true">×</span>
+              </button>
+              <strong>Отказано!</strong> Проверьте логин/пароль
+          </div>
+          {% endif %}
         <h2 class="form-signin-heading">Please sign in</h2>
         <label for="inputEmail" class="sr-only">Email address</label>
         <input id="inputEmail" name="{{ form.login.html_name }}" class="form-control" placeholder="Email address" required autofocus>

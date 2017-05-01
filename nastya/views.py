@@ -7,7 +7,7 @@ from django.views import View
 from db.condition import Condition
 from nastya.const import AUTH_COOKIE
 from nastya.decorators import auth_required
-from nastya.mappers import UserMapper, HotelMapper, HotelCategoryMapper
+from nastya.mappers import UserMapper, HotelMapper, HotelCategoryMapper, TagMapper, TagLinkMapper
 from nastya.app_models import User
 
 
@@ -39,38 +39,56 @@ class IndexDD(View):
     user_mapper = UserMapper()
     hotel_mapper = HotelMapper()
     category_mapper = HotelCategoryMapper()
+    tag_mapper = TagMapper()
+    taglink_mapper = TagLinkMapper()
     model = User
 
-    def get_hotels_list(self, category_list):
-        hotels = self.hotel_mapper.select()
+    def add_tags_to_hotels(self, hotels, tags):
+        taglinks = self.taglink_mapper.select()
+        # Экономим запросы в базу
+        hotel_id_to_tag = {}
+        __tag_id_map = {}
+        for tag in tags:
+            __tag_id_map[tag.id] = tag
+        for link in taglinks:
+            hotel_id_to_tag.setdefault(link.h_id, [])
+            hotel_id_to_tag[link.h_id].append(__tag_id_map[link.t_id])
 
-        hotel_map = dict((x.id, []) for x in category_list)
-        for hotel in hotels:
-            if hotel.category:
-                hotel_map[int(hotel.category)].append(hotel)
-        return hotel_map
+        for h in hotels:
+            h.tags = hotel_id_to_tag.get(h.id, [])
 
     def get(self, request):
         categories = self.category_mapper.select()
-        hotels = self.get_hotels_list(categories)
+        # hotels = self.get_hotels_list(categories)
         category_tree = Tree(categories).build_tree()
-
+        tags = self.tag_mapper.select()
         c = Condition()
+
         cids = [c.id for c in categories]
+
         if 'cids[]' in self.request.GET:
-            cids = self.request.GET.getlist('cids[]')
+            cids = [int(cid) for cid in self.request.GET.getlist('cids[]')]
             c &= Condition("category", cids)
+        tag_titles = []
+        if "tags[]" in self.request.GET:
+            tag_titles = [str(ttitle) for ttitle in self.request.GET.getlist('tags[]') if ttitle]
+            if tag_titles:
+                tag_ids = [x.id for x in self.tag_mapper.select(Condition("title", tag_titles))]
+                taglinks = self.taglink_mapper.select(Condition("t_id", tag_ids, action="IN"))
+                c &= Condition("id", [x.id for x in taglinks])
         if 'search_string' in self.request.GET:
             c &= Condition('title', "%" + self.request.GET['search_string'] + "%", action='LIKE')
         found_hotels = self.hotel_mapper.select(c)
+        self.add_tags_to_hotels(found_hotels, tags)
         return render(
             request,
             'index.html',
             {
-                'hotels': hotels,
+                'tags': tags,
                 'ct_tree': category_tree,
                 'found_hotels': found_hotels,
-                'checked': [int(cid) for cid in cids]
+                'checked': [int(cid) for cid in cids],
+                'selected_tags': tag_titles
             })
 
 
@@ -83,16 +101,16 @@ class AuthDD(View):
 
     def get(self, request):
         form = self.AuthForm()
-        return render(request, 'auth.html', {"form": form})
+        return render(request, 'auth.html', {"form": form, "no_auth": request.GET.get("no_auth", 0)})
 
     def post(self, request):
         form = self.AuthForm(data=request.POST)
         if not form.is_valid():
-            return HttpResponseRedirect('/')
+            return HttpResponseRedirect(reverse('auth') + "?no_auth=1")
 
         users = self.mapper.select(Condition('login', form.cleaned_data['login']) & Condition('password', form.cleaned_data['password']))
         if not users:
-            return None
+            return HttpResponseRedirect(reverse('auth') + "?no_auth=1")
         elif len(users) > 1:
             raise RuntimeError("login should be unique")
         response = HttpResponseRedirect(reverse('index'))
@@ -102,6 +120,34 @@ class AuthDD(View):
 
 class CompareDD(View):
     hotel_mapper = HotelMapper()
+    tag_mapper = TagMapper()
+    taglink_mapper = TagLinkMapper()
+    category_mapper = HotelCategoryMapper()
+
+    def add_tags_to_hotels(self, hotels):
+        tags = self.tag_mapper.select()
+        taglinks = self.taglink_mapper.select()
+        # Экономим запросы в базу
+        hotel_id_to_tag = {}
+        __tag_id_map = {}
+        for tag in tags:
+            __tag_id_map[tag.id] = tag
+        for link in taglinks:
+            hotel_id_to_tag.setdefault(link.h_id, [])
+            hotel_id_to_tag[link.h_id].append(__tag_id_map[link.t_id])
+
+        for h in hotels:
+            h.tags = hotel_id_to_tag.get(h.id, [])
+
+    def add_category_to_hotels(self, hotels):
+        categories = self.category_mapper.select()
+        # Экономим запросы в базу
+        hotel_id_to_category = {}
+        for c in categories:
+            hotel_id_to_category[c.id] = c
+
+        for h in hotels:
+            h.category = hotel_id_to_category.get(int(h.category), None)
 
     @auth_required
     def get(self, request):
@@ -110,4 +156,6 @@ class CompareDD(View):
             return render(request, 'compare.html')
         cond = Condition('id', ids)
         hotels = self.hotel_mapper.select(cond)
+        self.add_tags_to_hotels(hotels)
+        self.add_category_to_hotels(hotels)
         return render(request, 'compare.html', {'hotels': hotels, 'width': 420 * len(hotels)})
