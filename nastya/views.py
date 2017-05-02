@@ -72,7 +72,7 @@ class IndexDD(View):
             c &= Condition("category", cids)
         tag_titles = []
         if "tags[]" in self.request.GET:
-            tag_titles = [str(ttitle) for ttitle in self.request.GET.getlist('tags[]') if ttitle]
+            tag_titles = [str(ttitle).lower() for ttitle in self.request.GET.getlist('tags[]') if ttitle]
             if tag_titles:
                 tag_ids = [x.id for x in self.tag_mapper.select(Condition("title", tag_titles))]
                 if tag_ids:
