@@ -75,8 +75,9 @@ class IndexDD(View):
             tag_titles = [str(ttitle) for ttitle in self.request.GET.getlist('tags[]') if ttitle]
             if tag_titles:
                 tag_ids = [x.id for x in self.tag_mapper.select(Condition("title", tag_titles))]
-                taglinks = self.taglink_mapper.select(Condition("t_id", tag_ids, action="IN"))
-                c &= Condition("id", [x.id for x in taglinks])
+                if tag_ids:
+                    taglinks = self.taglink_mapper.select(Condition("t_id", tag_ids, action="IN"))
+                    c &= Condition("id", [x.id for x in taglinks])
         if 'search_string' in self.request.GET:
             c &= Condition('title', "%" + self.request.GET['search_string'] + "%", action='LIKE')
         found_hotels = self.hotel_mapper.select(c)
