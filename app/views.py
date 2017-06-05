@@ -5,11 +5,11 @@ from django.urls import reverse
 from django.views import View
 
 from db.condition import Condition
-from nastya.const import AUTH_COOKIE
-from nastya.decorators import auth_required
-from nastya.logger import Logger
-from nastya.mappers import UserMapper, HotelMapper, HotelCategoryMapper, TagMapper, TagLinkMapper
-from nastya.app_models import User
+from app.const import AUTH_COOKIE
+from app.decorators import auth_required
+from app.logger import Logger
+from app.mappers import UserMapper, HotelMapper, HotelCategoryMapper, TagMapper, TagLinkMapper
+from app.app_models import User
 
 
 class Tree:

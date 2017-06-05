@@ -2,8 +2,8 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 
 from db.condition import Condition
-from nastya.const import AUTH_COOKIE
-from nastya.mappers import UserMapper
+from app.const import AUTH_COOKIE
+from app.mappers import UserMapper
 
 
 def auth_required(view, *args, **kwargs):

@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
 from db.mapper import BaseMapper
-from nastya.app_models import User, Hotel, HotelCategory, Tag, TagLink
+from app.app_models import User, Hotel, HotelCategory, Tag, TagLink
 
 
 class UserMapper(BaseMapper):

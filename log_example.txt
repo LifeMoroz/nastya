@@ -1,2 +1,7 @@
 ERROR: Wrong password/login
 ERROR: Wrong password/login
+WARN: Invalid form
+WARN: Invalid form
+WARN: Invalid form
+WARN: Invalid form
+WARN: Invalid form

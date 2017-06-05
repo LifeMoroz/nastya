@@ -1,3 +1,4 @@
+import os
 import sqlite3
 from django.conf import settings
 
@@ -6,7 +7,7 @@ class Database:
     db = None
 
     def __init__(self):
-        self._conn = sqlite3.connect(settings.DATABASES['default']['NAME'])
+        self._conn = sqlite3.connect(os.path.join(settings.BASE_DIR, 'db/db.sqlite3'))
         self._cursor = self._conn.cursor()
 
     @staticmethod
