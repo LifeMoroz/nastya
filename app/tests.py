@@ -3,7 +3,6 @@ from unittest import TestCase
 from django.test import Client
 
 
-
 class MyCase(TestCase):
     def test_auth(self):
         c = Client()
